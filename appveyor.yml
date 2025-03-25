@@ -1,0 +1,51 @@
+# Versioning
+version: 1.0.{build}
+
+# Build environment
+image: Ubuntu
+
+# Clone repository
+clone_depth: 1
+
+# Caching dependencies
+cache:
+  - backend/.m2
+  - frontend/node_modules
+
+# Build configuration
+install:
+  - ps: >-
+      Write-Host "Installing dependencies"
+
+      # Install Node.js dependencies
+      cd frontend
+      npm install
+      cd ..
+
+      # Install Maven dependencies
+      cd backend
+      mvn dependency:go-offline
+      cd ..
+
+build_script:
+  - ps: >-
+      Write-Host "Building React app"
+
+      # Build frontend
+      cd frontend
+      npm run build
+      cd ..
+
+      Write-Host "Moving React build to Spring Boot static folder"
+      if (Test-Path "backend/src/main/resources/static") { Remove-Item -Recurse -Force backend/src/main/resources/static }
+      Move-Item frontend/build backend/src/main/resources/static
+
+      Write-Host "Building Spring Boot app"
+      cd backend
+      mvn clean package -DskipTests
+      cd ..
+
+# Artifacts (Final JAR)
+artifacts:
+  - path: backend/target/*.jar
+    name: SpringBootApp
