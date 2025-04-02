@@ -1,12 +1,14 @@
 package com.erasmus.goats.Planning_Poker.controller;
 
 import com.erasmus.goats.Planning_Poker.service.SessionService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/session")
 public class SessionController {
@@ -26,6 +28,7 @@ public class SessionController {
 
         // Create a user and assign an ID
         int userId = sessionService.addUser(username, isAdmin);
+        log.info("username is {} and userid is {}", username, userId);
 
         return ResponseEntity.ok(Map.of(
                 "message", "User joined successfully",
@@ -42,7 +45,7 @@ public class SessionController {
 
         // Submit the vote
         sessionService.submitVote(userId, vote);
-
+        log.info("vote is {} and userid is {}", vote, userId);
         return ResponseEntity.ok(Map.of("message", "Vote submitted successfully"));
     }
 
@@ -50,7 +53,7 @@ public class SessionController {
     @GetMapping("/results/{userId}")
     public ResponseEntity<Map<String, Object>> getResults(@PathVariable int userId) {
         Map<String, Object> results = sessionService.calculateResults(userId);
-
+        log.info("results is {}", results);
         if (results.containsKey("error")) {
             return ResponseEntity.status(403).body(results); // Forbidden if not admin
         }
