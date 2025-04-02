@@ -34,7 +34,7 @@ export default function App() {
     if (!showResults) {
       setSelectedCard(value);
 
-      await fetch("http://localhost:8080/api/session/vote", {
+      await fetch("https://planning-poker-backend-zb1u.onrender.com/api/session/vote", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, vote: value })
@@ -50,7 +50,7 @@ export default function App() {
 
     setShowResults(true);
 
-    const response = await fetch(`http://localhost:8080/api/session/results/${userId}`);
+    const response = await fetch(`https://planning-poker-backend-zb1u.onrender.com/api/session/results/${userId}`);
     const data = await response.json();
 
     if (data.error) {
