@@ -13,10 +13,9 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        // Disable CORS by allowing all origins, methods, and headers
         registry.addMapping("/**")
-                .allowedOrigins("*") // Allow all origins
-                .allowedMethods("*") // Allow all HTTP methods (GET, POST, etc.)
+                .allowedOrigins("*")
+                .allowedMethods("*")
                 .allowedHeaders("*");
     }
 }
