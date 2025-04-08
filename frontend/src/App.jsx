@@ -3,6 +3,7 @@ import CardComponent from "./components/ui/CardComponent";
 import { motion } from "framer-motion";
 
 const cardValues = [1, 2, 3, 5, 8, 13, 21, "?", "☕"];
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 export default function App() {
   const [selectedCard, setSelectedCard] = useState(null);
@@ -11,30 +12,31 @@ export default function App() {
   const [average, setAverage] = useState(null);
   const [userId, setUserId] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
-
+  
+  console.log(API_BASE_URL)
   useEffect(() => {
     const username = "User1"; // You can set this dynamically
-    const adminStatus = true; // Set this depending on your requirements
+    const adminStatus = true;
     joinSession(username, adminStatus);
   }, []);
 
   const joinSession = async (username, isAdmin) => {
-    const response = await fetch("https://planning-poker-backend-zb1u.onrender.com/api/session/join", {
+    const response = await fetch(`${API_BASE_URL}/api/session/join`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, isAdmin })
     });
-
     const data = await response.json();
+    console.log("joined session: " + data.userId + " " + data.isAdmin)
     setUserId(data.userId);
-    setIsAdmin(data.isAdmin);
+    setIsAdmin(true); // TODO add user management and admin check
   };
 
   const selectCard = async (value) => {
     if (!showResults) {
       setSelectedCard(value);
 
-      await fetch("https://planning-poker-backend-zb1u.onrender.com/api/session/vote", {
+      await fetch(`${API_BASE_URL}/api/session/vote`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, vote: value })
@@ -50,7 +52,7 @@ export default function App() {
 
     setShowResults(true);
 
-    const response = await fetch(`https://planning-poker-backend-zb1u.onrender.com/api/session/results/${userId}`);
+    const response = await fetch(`${API_BASE_URL}/api/session/results/${userId}`);
     const data = await response.json();
 
     if (data.error) {
@@ -62,11 +64,24 @@ export default function App() {
     setAverage(data.average);
   };
 
-  const resetGame = () => {
+  const resetGame = async () => {
     setSelectedCard(null);
     setShowResults(false);
-    setVotes([]); // Clear votes when resetting the game
-    setAverage(null); // Clear average when resetting
+    setVotes([]);
+    setAverage(null);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/session/reset`, {
+        method: "POST"
+      });
+
+      if (!response.ok) throw new Error("Failed to reset votes on server");
+
+      console.log("Votes cleared successfully.");
+    } catch (err) {
+      console.error("Reset failed:", err);
+      alert("Failed to reset votes on server.");
+    }
   };
 
   return (

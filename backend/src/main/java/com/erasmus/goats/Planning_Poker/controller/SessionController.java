@@ -60,5 +60,13 @@ public class SessionController {
 
         return ResponseEntity.ok(results);
     }
+
+    @PostMapping("/reset")
+    public ResponseEntity<Map<String, String>> resetVotes() {
+        sessionService.clearVotes(); // This method should be implemented in your service
+        log.info("Votes have been cleared.");
+        return ResponseEntity.ok(Map.of("message", "Votes cleared successfully"));
+    }
+
 }
 

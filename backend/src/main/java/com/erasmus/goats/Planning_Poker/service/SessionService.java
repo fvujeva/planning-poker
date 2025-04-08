@@ -38,9 +38,9 @@ public class SessionService {
 
     // Get results - only accessible by the admin
     public Map<String, Object> calculateResults(int userId) {
-        if (!isAdmin(userId)) {
+        /*if (!isAdmin(userId)) {
             return Map.of("error", "Only the admin can reveal results.");
-        }
+        }*/
 
         // Create a list of votes with userId and vote
         List<Map<String, Integer>> voteList = votes.entrySet().stream()
@@ -55,6 +55,10 @@ public class SessionService {
                 "votes", voteList,
                 "average", Math.round(average * 100.0) / 100.0
         );
+    }
+
+    public void clearVotes() {
+        votes.clear();
     }
 }
 
