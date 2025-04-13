@@ -2,6 +2,8 @@ package com.erasmus.goats.Planning_Poker.controller;
 
 import com.erasmus.goats.Planning_Poker.controller.dto.*;
 import com.erasmus.goats.Planning_Poker.service.SessionService;
+import com.erasmus.goats.Planning_Poker.service.SessionServiceImpl;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -10,14 +12,10 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RestController
 @RequestMapping("/api/session")
+@RequiredArgsConstructor
 public class SessionController {
 
     private final SessionService sessionService;
-
-    @Autowired
-    public SessionController(SessionService sessionService) {
-        this.sessionService = sessionService;
-    }
 
     @PostMapping("/join")
     public ResponseEntity<JoinSessionResponseDto> joinSession(@RequestBody JoinSessionRequestDto request) {
