@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import CardComponent from "./components/ui/CardComponent";
 import { motion } from "framer-motion";
+import SockJS from "sockjs-client";
+import { Client } from "@stomp/stompjs";
 
 const cardValues = [1, 2, 3, 5, 8, 13, 21, "?", "☕"];
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -15,7 +17,9 @@ export default function App() {
   const [userId, setUserId] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [sessionId, setSessionId] = useState(null);
+  const [stompClient, setStompClient] = useState(null);
 
+  // Load session from localStorage
   useEffect(() => {
     const storedSession = localStorage.getItem("planningPokerUser");
     const params = new URLSearchParams(window.location.search);
@@ -34,6 +38,62 @@ export default function App() {
       setSessionId(sessionId);
     }
   }, []);
+
+  // Connect to WebSocket when userId is available
+  useEffect(() => {
+    if (!userId) return;
+  
+    const socket = new SockJS(`${API_BASE_URL}/ws`);
+    const client = new Client({
+      webSocketFactory: () => socket,
+      reconnectDelay: 5000,
+      onConnect: () => {
+        console.log("WebSocket connected");
+  
+        // Subscribe to results
+        client.subscribe(`/topic/results/${sessionId}`, (message) => {
+          try {
+            const data = JSON.parse(message.body);
+            setVotes(data.votes || []);
+            setAverage(data.average || null);
+            setShowResults(true);
+          } catch (error) {
+            console.error("Error parsing result message:", error);
+          }
+        });
+  
+        // Subscribe to reset
+        client.subscribe(`/topic/reset/${sessionId}`, (message) => {
+          try {
+            const shouldReset = JSON.parse(message.body);
+            if (shouldReset === true) {
+              console.log("Reset signal received");
+              setSelectedCard(null);
+              setVotes([]);
+              setAverage(null);
+              setShowResults(false);
+            }
+          } catch (error) {
+            console.error("Error parsing reset message:", error);
+          }
+        });
+      },
+      onStompError: (frame) => {
+        console.error("STOMP Error:", frame);
+      },
+      onWebSocketError: (error) => {
+        console.error("WebSocket Error:", error);
+      },
+    });
+  
+    client.activate();
+    setStompClient(client);
+  
+    return () => {
+      client.deactivate();
+    };
+  }, [userId, sessionId]);
+  
 
   const handleJoin = async () => {
     if (!username) {
@@ -120,18 +180,8 @@ export default function App() {
       return;
     }
 
-    setShowResults(true);
-
-    const response = await fetch(`${API_BASE_URL}/api/session/results/${userId}`);
-    const data = await response.json();
-
-    if (data.error) {
-      alert(data.error);
-      return;
-    }
-
-    setVotes(data.votes);
-    setAverage(data.average);
+    // Notify backend to calculate and broadcast results via WebSocket
+    await fetch(`${API_BASE_URL}/api/session/results/${userId}?sessionId=${sessionId}`);
   };
 
   const resetGame = async () => {
@@ -141,13 +191,11 @@ export default function App() {
     setAverage(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/session/reset`, {
+      const response = await fetch(`${API_BASE_URL}/api/session/reset?sessionId=${sessionId}`, {
         method: "POST",
       });
 
       if (!response.ok) throw new Error("Failed to reset votes on server");
-
-      console.log("Votes cleared successfully.");
     } catch (err) {
       console.error("Reset failed:", err);
       alert("Failed to reset votes on server.");
@@ -167,7 +215,6 @@ export default function App() {
     setSessionId(null);
   };
 
-  // Show only create or join depending on URL param
   if (!hasJoined) {
     const isJoining = !!sessionId;
 
@@ -227,7 +274,7 @@ export default function App() {
         </button>
       )}
 
-      {showResults && isAdmin && (
+      {showResults && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -247,12 +294,14 @@ export default function App() {
       )}
 
       <div className="flex gap-4 mt-4">
+      {isAdmin && (
         <button
-          onClick={resetGame}
-          className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-        >
-          Reset
-        </button>
+            onClick={resetGame}
+            className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
+          >
+            Reset
+          </button>
+        )}
         <button
           onClick={logout}
           className="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
