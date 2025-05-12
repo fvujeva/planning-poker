@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class SessionController {
 
     private final SessionService sessionService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @PostMapping("/join")
     public ResponseEntity<?> joinSession(@RequestBody JoinSessionRequestDto request) {
@@ -36,16 +38,20 @@ public class SessionController {
     }
 
     @GetMapping("/results/{userId}")
-    public ResponseEntity<?> getResults(@PathVariable Long userId) {
+    public ResponseEntity<?> getResults(@PathVariable Long userId, @RequestParam String sessionId) {
         ResultResponseDto result = sessionService.calculateResults(userId);
+        String destination = "/topic/results/" + sessionId;
+        messagingTemplate.convertAndSend(destination, result);
         return ResponseEntity.ok(result);
     }
 
 
     @PostMapping("/reset")
-    public ResponseEntity<GenericResponseDto> resetVotes() {
+    public ResponseEntity<GenericResponseDto> resetVotes(@RequestParam String sessionId) {
         sessionService.clearVotes();
         log.info("Votes have been cleared.");
+        String destination = "/topic/reset/" + sessionId;
+        messagingTemplate.convertAndSend(destination, true);
         return ResponseEntity.ok(new GenericResponseDto("Votes cleared successfully"));
     }
 }
