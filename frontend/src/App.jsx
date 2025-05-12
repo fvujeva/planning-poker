@@ -7,24 +7,31 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 export default function App() {
   const [username, setUsername] = useState("");
-  const [isAdminInput, setIsAdminInput] = useState(false);
   const [hasJoined, setHasJoined] = useState(false);
-
   const [selectedCard, setSelectedCard] = useState(null);
   const [showResults, setShowResults] = useState(false);
   const [votes, setVotes] = useState([]);
   const [average, setAverage] = useState(null);
   const [userId, setUserId] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [sessionId, setSessionId] = useState(null);
 
   useEffect(() => {
     const storedSession = localStorage.getItem("planningPokerUser");
+    const params = new URLSearchParams(window.location.search);
+    const sessionFromUrl = params.get("sessionId");
+
+    if (sessionFromUrl) {
+      setSessionId(sessionFromUrl);
+    }
+
     if (storedSession) {
-      const { userId, username, isAdmin } = JSON.parse(storedSession);
+      const { userId, username, isAdmin, sessionId } = JSON.parse(storedSession);
       setUserId(userId);
       setUsername(username);
-      setIsAdmin(true);
+      setIsAdmin(isAdmin);
       setHasJoined(true);
+      setSessionId(sessionId);
     }
   }, []);
 
@@ -38,26 +45,61 @@ export default function App() {
       const response = await fetch(`${API_BASE_URL}/api/session/join`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, isAdmin: isAdminInput }),
+        body: JSON.stringify({ username, isAdmin: false, sessionId }),
       });
 
       const data = await response.json();
       setUserId(data.userId);
-      setIsAdmin(true); // use what the server returns
+      setIsAdmin(data.isAdmin);
       setHasJoined(true);
+      setSessionId(data.sessionId);
 
-      // Store session info
       localStorage.setItem(
         "planningPokerUser",
         JSON.stringify({
           userId: data.userId,
           username,
-          isAdmin: true,
+          isAdmin: data.isAdmin,
+          sessionId: data.sessionId,
         })
       );
     } catch (err) {
       console.error("Join failed:", err);
       alert("Failed to join session.");
+    }
+  };
+
+  const handleCreate = async () => {
+    if (!username) {
+      alert("Please enter a username");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/session/join`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, isAdmin: true }),
+      });
+
+      const data = await response.json();
+      setUserId(data.userId);
+      setIsAdmin(data.isAdmin);
+      setHasJoined(true);
+      setSessionId(data.sessionId);
+
+      localStorage.setItem(
+        "planningPokerUser",
+        JSON.stringify({
+          userId: data.userId,
+          username,
+          isAdmin: data.isAdmin,
+          sessionId: data.sessionId,
+        })
+      );
+    } catch (err) {
+      console.error("Create failed:", err);
+      alert("Failed to create session.");
     }
   };
 
@@ -122,13 +164,16 @@ export default function App() {
     setVotes([]);
     setAverage(null);
     setShowResults(false);
+    setSessionId(null);
   };
 
-  // --- Join Screen ---
+  // Show only create or join depending on URL param
   if (!hasJoined) {
+    const isJoining = !!sessionId;
+
     return (
       <div className="flex flex-col items-center justify-center min-h-screen p-6 space-y-4">
-        <h1 className="text-3xl font-bold">Join Planning Poker</h1>
+        <h1 className="text-3xl font-bold">Planning Poker</h1>
         <input
           type="text"
           placeholder="Enter your username"
@@ -136,29 +181,31 @@ export default function App() {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
-        <label className="flex items-center space-x-2">
-          <input
-            type="checkbox"
-            checked={isAdminInput}
-            onChange={() => setIsAdminInput(!isAdminInput)}
-          />
-          <span>Join as Admin</span>
-        </label>
         <button
-          onClick={handleJoin}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          onClick={isJoining ? handleJoin : handleCreate}
+          className={`${
+            isJoining ? "bg-green-500 hover:bg-green-700" : "bg-blue-500 hover:bg-blue-700"
+          } text-white font-bold py-2 px-4 rounded`}
         >
-          Join Game
+          {isJoining ? "Join Game" : "Create Game"}
         </button>
       </div>
     );
   }
 
-  // --- Main Game Screen ---
   return (
     <div className="flex flex-col items-center p-6 space-y-6">
       <h1 className="text-2xl font-bold">Planning Poker</h1>
       <p className="text-sm text-gray-600">Welcome, {username}</p>
+
+      {isAdmin && sessionId && (
+        <div className="mt-4 text-sm text-gray-700">
+          <p>Invite others with this link:</p>
+          <code className="bg-gray-100 p-2 rounded block">
+            {`${window.location.origin}?sessionId=${sessionId}`}
+          </code>
+        </div>
+      )}
 
       <div className="grid grid-cols-5 gap-4">
         {cardValues.map((value) => (
@@ -171,12 +218,14 @@ export default function App() {
         ))}
       </div>
 
-      <button
-        onClick={revealCards}
-        className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-      >
-        Reveal Cards
-      </button>
+      {isAdmin && (
+        <button
+          onClick={revealCards}
+          className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Reveal Cards
+        </button>
+      )}
 
       {showResults && isAdmin && (
         <motion.div

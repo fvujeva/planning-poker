@@ -18,16 +18,15 @@ public class SessionController {
     private final SessionService sessionService;
 
     @PostMapping("/join")
-    public ResponseEntity<JoinSessionResponseDto> joinSession(@RequestBody JoinSessionRequestDto request) {
-        int userId = sessionService.addUser(request.getUsername(), request.isAdmin());
-        log.info("username is {} and userid is {}", request.getUsername(), userId);
-
-        return ResponseEntity.ok(new JoinSessionResponseDto(
-                "User joined successfully",
-                userId,
-                request.isAdmin()
-        ));
+    public ResponseEntity<?> joinSession(@RequestBody JoinSessionRequestDto request) {
+        return ResponseEntity.ok(sessionService.joinSession(request));
     }
+
+    @PostMapping("/create")
+    public ResponseEntity<?> createSession(@RequestBody CreateSessionRequestDto request) {
+        return ResponseEntity.ok(sessionService.createSession(request));
+    }
+
 
     @PostMapping("/vote")
     public ResponseEntity<GenericResponseDto> submitVote(@RequestBody VoteRequestDto request) {
@@ -37,7 +36,7 @@ public class SessionController {
     }
 
     @GetMapping("/results/{userId}")
-    public ResponseEntity<?> getResults(@PathVariable int userId) {
+    public ResponseEntity<?> getResults(@PathVariable Long userId) {
         ResultResponseDto result = sessionService.calculateResults(userId);
         return ResponseEntity.ok(result);
     }
