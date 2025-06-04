@@ -9,6 +9,7 @@ const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
 
 export default function App() {
   const [username, setUsername] = useState("");
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [hasJoined, setHasJoined] = useState(false);
   const [selectedCard, setSelectedCard] = useState(null);
   const [showResults, setShowResults] = useState(false);
@@ -98,6 +99,11 @@ export default function App() {
   const handleJoin = async () => {
     if (!username) {
       alert("Please enter a username");
+      return;
+    }
+
+    if (!acceptedTerms) {
+      alert("You must accept the Terms and Conditions to continue.");
       return;
     }
 
@@ -228,8 +234,25 @@ export default function App() {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
         />
+
+        <label className="flex items-start text-sm w-64 space-x-2">
+          <input
+              type="checkbox"
+              checked={acceptedTerms}
+              onChange={(e) => setAcceptedTerms(e.target.checked)}
+              className="mt-1"
+          />
+          <span>
+            I accept the{" "}
+            <a href="/privacy-policy" target="_blank" className="text-blue-600 underline">
+              Terms and Conditions
+            </a>
+          </span>
+        </label>
+
         <button
           onClick={isJoining ? handleJoin : handleCreate}
+          disabled={!acceptedTerms}
           className={`${
             isJoining ? "bg-green-500 hover:bg-green-700" : "bg-blue-500 hover:bg-blue-700"
           } text-white font-bold py-2 px-4 rounded`}
