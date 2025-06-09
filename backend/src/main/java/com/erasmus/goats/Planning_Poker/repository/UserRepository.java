@@ -1,5 +1,7 @@
 package com.erasmus.goats.Planning_Poker.repository;
 
+import com.erasmus.goats.Planning_Poker.repository.entity.AppUser;
+
 import java.util.List;
 
 public interface UserRepository {

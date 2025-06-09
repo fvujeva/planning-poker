@@ -3,6 +3,7 @@ import CardComponent from "./components/ui/CardComponent";
 import { motion } from "framer-motion";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
+import UserStoryManager from "./components/UserStoryManager";
 
 const cardValues = [1, 2, 3, 5, 8, 13, 21, "?", "☕"];
 const API_BASE_URL = process.env.REACT_APP_API_BASE_URL;
@@ -277,6 +278,10 @@ export default function App() {
         </div>
       )}
 
+      {isAdmin && sessionId && (
+        <UserStoryManager sessionId={sessionId} />
+      )}
+
       <div className="grid grid-cols-5 gap-4">
         {cardValues.map((value) => (
           <CardComponent
@@ -334,4 +339,5 @@ export default function App() {
       </div>
     </div>
   );
+  
 }
