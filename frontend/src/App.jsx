@@ -20,6 +20,8 @@ export default function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [sessionId, setSessionId] = useState(null);
   const [stompClient, setStompClient] = useState(null);
+  const [sessionHistory, setSessionHistory] = useState([]);
+  const [showHistory, setShowHistory] = useState(false);
 
   // Load session from localStorage
   useEffect(() => {
@@ -191,6 +193,18 @@ export default function App() {
     await fetch(`${API_BASE_URL}/api/session/results/${userId}?sessionId=${sessionId}`);
   };
 
+  const fetchSessionHistory = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/session/history/${userId}`);
+      const data = await res.json();
+      setSessionHistory(data);
+      setShowHistory(true);
+    } catch (error) {
+      console.error("Failed to fetch session history:", error);
+      alert("Could not load session history.");
+    }
+  };
+
   const resetGame = async () => {
     setSelectedCard(null);
     setShowResults(false);
@@ -320,6 +334,38 @@ export default function App() {
           <p className="font-bold mt-4">Average Vote: {average}</p>
         </motion.div>
       )}
+      {showHistory && (
+          <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="mt-6 w-full max-w-2xl bg-white shadow p-4 rounded"
+          >
+            <h2 className="text-xl font-bold mb-2">Your Session History</h2>
+            {sessionHistory.length === 0 ? (
+                <p>No past sessions found.</p>
+            ) : (
+                sessionHistory.map((session, idx) => (
+                    <div key={idx} className="mb-4 border-b pb-2">
+                      <p className="font-semibold">Session ID: {session.sessionId}</p>
+                      <p>Average Vote: {session.average}</p>
+                      <ul className="ml-4 mt-1">
+                        {session.votes.map((vote, i) => (
+                            <li key={i}>
+                              {vote.username}: {vote.value}
+                            </li>
+                        ))}
+                      </ul>
+                    </div>
+                ))
+            )}
+            <button
+                onClick={() => setShowHistory(false)}
+                className="mt-4 bg-gray-300 hover:bg-gray-400 text-black font-semibold py-1 px-3 rounded"
+            >
+              Close
+            </button>
+          </motion.div>
+      )}
 
       <div className="flex gap-4 mt-4">
       {isAdmin && (
@@ -330,6 +376,12 @@ export default function App() {
             Reset
           </button>
         )}
+        <button
+            onClick={fetchSessionHistory}
+            className="bg-indigo-500 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded"
+        >
+          View Session History
+        </button>
         <button
           onClick={logout}
           className="bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
