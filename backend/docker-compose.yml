@@ -6,13 +6,26 @@ services:
     container_name: postgres-db-1
     restart: always
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: H2e3zPzZosaTjOujKL53i9zD0djQam7o
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: planning_poker_tjxp
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: .
+    container_name: planning-poker-backend
+    depends_on:
+      - postgres
+    environment:
+      DB_URL: ${DB_URL}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      FRONTEND_URL: ${FRONTEND_URL}
+    ports:
+      - "8080:8080"
 
 volumes:
   postgres_data:
