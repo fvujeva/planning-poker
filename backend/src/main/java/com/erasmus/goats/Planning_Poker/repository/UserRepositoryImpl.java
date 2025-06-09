@@ -1,5 +1,7 @@
 package com.erasmus.goats.Planning_Poker.repository;
 
+import com.erasmus.goats.Planning_Poker.repository.entity.AppUser;
+import com.erasmus.goats.Planning_Poker.repository.jpa.UserJpaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

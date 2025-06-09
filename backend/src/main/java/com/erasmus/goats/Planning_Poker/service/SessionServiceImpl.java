@@ -5,9 +5,9 @@ import com.erasmus.goats.Planning_Poker.controller.dto.CreateSessionResponseDto;
 import com.erasmus.goats.Planning_Poker.controller.dto.JoinSessionRequestDto;
 import com.erasmus.goats.Planning_Poker.controller.dto.ResultResponseDto;
 import com.erasmus.goats.Planning_Poker.model.Vote;
-import com.erasmus.goats.Planning_Poker.repository.Session;
+import com.erasmus.goats.Planning_Poker.repository.entity.Session;
 import com.erasmus.goats.Planning_Poker.repository.SessionRepository;
-import com.erasmus.goats.Planning_Poker.repository.AppUser;
+import com.erasmus.goats.Planning_Poker.repository.entity.AppUser;
 import com.erasmus.goats.Planning_Poker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,6 +21,12 @@ public class SessionServiceImpl implements SessionService {
 
     private final SessionRepository sessionRepository;
     private final UserRepository userRepository;
+
+    @Override
+    public Session findBySessionId(String sessionId) {
+       return sessionRepository.findSessionBySessionId(sessionId)
+                .orElseThrow(() -> new RuntimeException("Session not found"));
+    }
 
     public Map<String, Object> joinSession(JoinSessionRequestDto req) {
         Session session;

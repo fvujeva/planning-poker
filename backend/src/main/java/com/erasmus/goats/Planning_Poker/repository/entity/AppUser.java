@@ -1,4 +1,4 @@
-package com.erasmus.goats.Planning_Poker.repository;
+package com.erasmus.goats.Planning_Poker.repository.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
