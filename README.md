@@ -17,7 +17,7 @@ The Technologies in Software Development: Planning Poker Project of the Erasmus 
 * **Build the Docker image:**
 
   ```bash
-  docker build -t your-backend-image-name .
+  docker build -t backend .
   ```
 
 * **Run Docker container:**
