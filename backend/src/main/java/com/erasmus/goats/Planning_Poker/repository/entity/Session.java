@@ -18,6 +18,9 @@ public class Session {
     @Column
     private boolean active = true;
 
+    @Column
+    private double avg;
+
     @OneToMany(mappedBy = "session", cascade = CascadeType.ALL)
     private List<AppUser> users = new ArrayList<>();
 

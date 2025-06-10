@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
+import java.util.List;
 
 @Slf4j
 @RestController
@@ -45,6 +46,11 @@ public class SessionController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/history/{userId}")
+    public ResponseEntity<?> getSessionHistory(@PathVariable Long userId) {
+        List<SessionHistoryDto> history = sessionService.getUserSessionHistory(userId);
+        return ResponseEntity.ok(history);
+    }
 
     @PostMapping("/reset")
     public ResponseEntity<GenericResponseDto> resetVotes(@RequestParam String sessionId) {

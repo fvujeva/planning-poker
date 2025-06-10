@@ -81,8 +81,12 @@ const UserStoryManager = ({ sessionId }) => {
                 <p className="text-sm text-gray-600">{story.description}</p>
               </div>
               <button
-                onClick={() => handleDeleteUserStory(story.id)}
-                className="text-red-500 hover:text-red-700"
+                  onClick={() => {
+                    if (window.confirm("Are you sure you want to delete this user story?")) {
+                      handleDeleteUserStory(story.id);
+                    }
+                  }}
+                  className="text-red-500 hover:text-red-700"
               >
                 Delete
               </button>

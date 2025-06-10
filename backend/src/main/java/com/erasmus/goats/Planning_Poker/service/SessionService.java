@@ -1,11 +1,9 @@
 package com.erasmus.goats.Planning_Poker.service;
 
-import com.erasmus.goats.Planning_Poker.controller.dto.CreateSessionRequestDto;
-import com.erasmus.goats.Planning_Poker.controller.dto.CreateSessionResponseDto;
-import com.erasmus.goats.Planning_Poker.controller.dto.JoinSessionRequestDto;
-import com.erasmus.goats.Planning_Poker.controller.dto.ResultResponseDto;
+import com.erasmus.goats.Planning_Poker.controller.dto.*;
 import com.erasmus.goats.Planning_Poker.repository.entity.Session;
 
+import java.util.List;
 import java.util.Map;
 
 public interface SessionService {
@@ -23,4 +21,6 @@ public interface SessionService {
     void clearVotes();
 
     CreateSessionResponseDto createSession(CreateSessionRequestDto request);
+
+    List<SessionHistoryDto> getUserSessionHistory(Long userId);
 }

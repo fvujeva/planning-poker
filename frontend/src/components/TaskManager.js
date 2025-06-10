@@ -65,11 +65,16 @@ const TaskManager = ({ userStoryId }) => {
               <span>{task.description}</span>
             </div>
             <button
-              onClick={() => handleDeleteTask(task.id)}
-              className="text-red-500 hover:text-red-700 ml-4"
+                onClick={() => {
+                  if (window.confirm("Are you sure you want to delete this task?")) {
+                    handleDeleteTask(task.id);
+                  }
+                }}
+                className="text-red-500 hover:text-red-700 ml-4"
             >
               Delete
             </button>
+
           </li>
         ))}
       </ul>

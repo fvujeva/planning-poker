@@ -1,7 +1,7 @@
 package com.erasmus.goats.Planning_Poker.repository;
 
-import com.erasmus.goats.Planning_Poker.model.Vote;
 import com.erasmus.goats.Planning_Poker.repository.entity.Session;
+import com.erasmus.goats.Planning_Poker.repository.entity.Vote;
 import com.erasmus.goats.Planning_Poker.repository.jpa.SessionJpaRepository;
 import com.erasmus.goats.Planning_Poker.repository.jpa.UserJpaRepository;
 import lombok.RequiredArgsConstructor;

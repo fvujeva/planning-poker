@@ -1,13 +1,13 @@
-package com.erasmus.goats.Planning_Poker.model;
+package com.erasmus.goats.Planning_Poker.controller.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
 @AllArgsConstructor
-public class Vote {
-    private int userId;
+@NoArgsConstructor
+public class VoteDto {
     private String username;
     private int value;
 }
-
